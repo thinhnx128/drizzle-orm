@@ -12,7 +12,7 @@
 // it's faster while producing an identical string (ASCII bytes map 1:1 under both encodings).
 // Types that can carry non-ASCII (text/varchar/bpchar/name/money/xml/json/jsonb, and anything routed
 // to the helper closure) stay UTF-8 so unicode is preserved.
-import { extAt, extLeafFor, parseLineAbc, parseLineTuple } from './geo.ts';
+import { extAt, extLeafFor } from './geo.ts';
 import { buildJsonWalk, genJsonParsers, type JsonMarker, type JsonPlan, type JsTarget, specNeedsWalk } from './json.ts';
 import { parseJsonBuffer } from './jsonparse.ts';
 import { customAt, customDelimFor, customLeafFor } from './registry.ts';
@@ -955,7 +955,7 @@ export function compileResultSet(
 	const srcName = mapperSrcName(cols, mode);
 	if (DEBUG) {
 		console.error(
-			`\n[Drizzle Postgres decode2] ${mode} result-set mapper ${srcName} for (${
+			`\n[postgres decode2] ${mode} result-set mapper ${srcName} for (${
 				cols.map((c) => c.name).join(', ')
 			}):\n${source}\n`,
 		);
