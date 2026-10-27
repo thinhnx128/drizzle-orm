@@ -237,6 +237,7 @@ export const fromPool = Effect.fnUntraced(
 			releaseSavepoint: (name) => `RELEASE SAVEPOINT ${name}`,
 			spanAttributes,
 			transformRows,
+			driver: 'drizzle-postgres',
 		});
 
 		const scopedConnection = Effect.flatMap(
