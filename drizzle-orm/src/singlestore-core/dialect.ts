@@ -245,9 +245,17 @@ export class SingleStoreDialect {
 				}
 			} else if (is(field, Column)) {
 				if (isSingleTable) {
-					chunk.push(sql.identifier(this.casing.getColumnCasing(field)));
+					chunk.push(
+						typeof field.selectFromDb === 'function'
+							? field.selectFromDb(sql`${sql.identifier(this.casing.getColumnCasing(field))}`)
+							: sql.identifier(this.casing.getColumnCasing(field)),
+					);
 				} else {
-					chunk.push(field);
+					chunk.push(
+						typeof field.selectFromDb === 'function'
+							? field.selectFromDb(sql`${field}`)
+							: field,
+					);
 				}
 			} else if (is(field, Subquery)) {
 				const entries = Object.entries(field._.selectedFields) as [
@@ -848,6 +856,8 @@ export class SingleStoreDialect {
 							? sql`${sql.identifier(`${tableAlias}_${tsKey}`)}.${sql.identifier('data')}`
 							: is(field, SQL.Aliased)
 							? field.sql
+							: is(field, Column) && typeof field.selectFromDb === 'function'
+							? field.selectFromDb(sql`${field}`)
 							: field
 					),
 					sql`, `,

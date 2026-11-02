@@ -61,8 +61,9 @@ export class SQLiteCustomColumn<T extends ColumnBaseConfig<'custom', 'SQLiteCust
 	static override readonly [entityKind]: string = 'SQLiteCustomColumn';
 
 	private sqlName: string;
-	private mapTo?: (value: T['data']) => T['driverParam'];
+	private mapTo?: (value: T['data']) => T['driverParam'] | SQL;
 	private mapFrom?: (value: T['driverParam']) => T['data'];
+	override readonly selectFromDb?: (column: SQL) => SQL;
 
 	constructor(
 		table: AnySQLiteTable<{ name: T['tableName'] }>,
@@ -72,6 +73,7 @@ export class SQLiteCustomColumn<T extends ColumnBaseConfig<'custom', 'SQLiteCust
 		this.sqlName = config.customTypeParams.dataType(config.fieldConfig);
 		this.mapTo = config.customTypeParams.toDriver;
 		this.mapFrom = config.customTypeParams.fromDriver;
+		this.selectFromDb = config.customTypeParams.selectFromDb;
 	}
 
 	getSQLType(): string {
@@ -82,7 +84,7 @@ export class SQLiteCustomColumn<T extends ColumnBaseConfig<'custom', 'SQLiteCust
 		return typeof this.mapFrom === 'function' ? this.mapFrom(value) : value as T['data'];
 	}
 
-	override mapToDriverValue(value: T['data']): T['driverParam'] {
+	override mapToDriverValue(value: T['data']): T['driverParam'] | SQL {
 		return typeof this.mapTo === 'function' ? this.mapTo(value) : value as T['data'];
 	}
 }
@@ -195,6 +197,17 @@ export interface CustomTypeParams<T extends CustomTypeValues> {
 	 * ```
 	 */
 	fromDriver?: (value: T['driverData']) => T['data'];
+
+	/**
+	 * Optional SQL transformation applied when selecting this column from the database
+	 * @example
+	 * ```
+	 * selectFromDb(column: SQL): SQL {
+	 * 	return sql`ST_AsText(${column})`;
+	 * }
+	 * ```
+	 */
+	selectFromDb?: (column: SQL) => SQL;
 }
 
 /**

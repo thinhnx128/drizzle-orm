@@ -85,6 +85,7 @@ export abstract class Column<
 	readonly enumValues: T['enumValues'] = undefined;
 	readonly generated: GeneratedColumnConfig<T['data']> | undefined = undefined;
 	readonly generatedIdentity: GeneratedIdentityConfig | undefined = undefined;
+	readonly selectFromDb?: (column: SQL) => SQL;
 
 	protected config: ColumnRuntimeConfig<T['data'], TRuntimeConfig>;
 

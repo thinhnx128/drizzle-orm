@@ -240,7 +240,11 @@ export class GelDialect {
 					// if (isSingleTable) {
 					// 	chunk.push(sql.identifier(this.casing.getColumnCasing(field)));
 					// } else {
-					chunk.push(field);
+					chunk.push(
+						typeof field.selectFromDb === 'function'
+							? field.selectFromDb(sql`${field}`)
+							: field,
+					);
 					// }
 				} else if (is(field, Subquery)) {
 					const entries = Object.entries(field._.selectedFields) as [string, SQL.Aliased | Column | SQL][];
@@ -1351,6 +1355,8 @@ export class GelDialect {
 							? sql`${sql.identifier(`${tableAlias}_${tsKey}`)}.${sql.identifier('data')}`
 							: is(field, SQL.Aliased)
 							? field.sql
+							: is(field, Column) && typeof field.selectFromDb === 'function'
+							? field.selectFromDb(sql`${field}`)
 							: field
 					),
 					sql`, `,

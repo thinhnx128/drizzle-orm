@@ -209,7 +209,19 @@ export abstract class SQLiteDialect {
 				}
 			} else if (is(field, Column)) {
 				const tableName = field.table[Table.Symbol.Name];
-				if (field.columnType === 'SQLiteNumericBigInt') {
+				if (typeof field.selectFromDb === 'function') {
+					if (isSingleTable) {
+						chunk.push(
+							field.selectFromDb(sql`${sql.identifier(this.casing.getColumnCasing(field))}`),
+						);
+					} else {
+						chunk.push(
+							field.selectFromDb(
+								sql`${sql.identifier(tableName)}.${sql.identifier(this.casing.getColumnCasing(field))}`,
+							),
+						);
+					}
+				} else if (field.columnType === 'SQLiteNumericBigInt') {
 					if (isSingleTable) {
 						chunk.push(
 							sql`cast(${sql.identifier(this.casing.getColumnCasing(field))} as text)`,
@@ -839,7 +851,9 @@ export abstract class SQLiteDialect {
 				sql.join(
 					selection.map(({ field }) =>
 						is(field, SQLiteColumn)
-							? sql.identifier(this.casing.getColumnCasing(field))
+							? typeof field.selectFromDb === 'function'
+								? field.selectFromDb(sql`${sql.identifier(this.casing.getColumnCasing(field))}`)
+								: sql.identifier(this.casing.getColumnCasing(field))
 							: is(field, SQL.Aliased)
 							? field.sql
 							: field
